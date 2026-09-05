@@ -82,6 +82,41 @@
   background-image:none!important;
 }
 
+
+/* Vowora cloud sync + partner sharing */
+.cloud-panel{background:rgba(255,255,255,.76);border:1px solid var(--line);border-radius:18px;padding:18px;margin:16px 0;box-shadow:0 8px 24px rgba(25,35,45,.05)}
+.cloud-panel h3{font:26px Georgia,serif;margin:0 0 6px}
+.cloud-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.cloud-field{display:flex;flex-direction:column;gap:6px}
+.cloud-field label{font-weight:800;font-size:12px}
+.cloud-field input{padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.cloud-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.cloud-actions button{padding:10px 14px;border-radius:999px;border:1px solid var(--line);font-weight:800;cursor:pointer}
+.cloud-primary{background:#0b1823!important;color:#fff!important}
+.cloud-muted{font-size:12px;color:var(--muted);line-height:1.5}
+.cloud-status{margin-top:10px;padding:10px 12px;border-radius:12px;background:#f6f0e9;font-size:12px}
+@media(max-width:760px){.cloud-grid{grid-template-columns:1fr}}
+
+
+/* Vowora vendor marketplace + print/export */
+.vendor-feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}
+.vendor-feature-card{background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:16px;padding:16px;min-height:150px}
+.vendor-feature-card h4{font:20px Georgia,serif;margin:0 0 7px}
+.vendor-feature-card p{font-size:12px;color:var(--muted);line-height:1.55;margin:0 0 10px}
+.vendor-feature-card .mini{font-size:11px;color:#6b6258}
+.marketplace-note{background:#f8f3ec;border:1px solid var(--line);border-radius:16px;padding:14px;margin:14px 0;font-size:12px;line-height:1.55;color:#5f554b}
+.print-panel{background:rgba(255,255,255,.86);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:16px}
+.print-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.print-actions button{padding:10px 14px;border-radius:999px;border:1px solid var(--line);font-weight:800;cursor:pointer}
+.print-primary{background:#0b1823!important;color:#fff!important}
+@media(max-width:900px){.vendor-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.vendor-feature-grid{grid-template-columns:1fr}}
+@media print{
+  body *{visibility:hidden!important}
+  #printableWedding,#printableWedding *{visibility:visible!important}
+  #printableWedding{position:absolute;left:0;top:0;width:100%;background:#fff;color:#000;padding:24px}
+}
+
 </style>
 </head>
 <body>
@@ -108,7 +143,62 @@
 <button class="quote" style="padding:11px 15px;border-radius:999px;font-weight:800" onclick="saveProfile()">Save / Update wedding profile</button>
 <button style="padding:11px 15px;border-radius:999px;font-weight:800;border:1px solid var(--line);background:#fff;color:var(--ink)" onclick="startNewCouple()">Start a new couple profile</button>
 </div>
-<p style="font-size:12px;color:var(--muted);margin:9px 2px 0">Use “Start a new couple profile” before handing Vowora to another couple on the same device. Their names, date, photos and progress will replace the previous local profile.</p>
+<p style="font-size:12px;color:var(--muted);margin:9px 2px 0">Use “Start a new couple profile” before handing Vowora to another couple on the same device.
+<section class="cloud-panel" id="cloudPanel">
+  <h3>Save & share your wedding</h3>
+  <p class="cloud-muted">Sign in once and Vowora saves your wedding to the cloud. Your partner can sign in on another device and continue from the same progress without re-entering anything.</p>
+
+  <div class="cloud-grid">
+    <div class="cloud-field">
+      <label>Email</label>
+      <input id="cloudEmail" type="email" placeholder="you@example.com">
+    </div>
+    <div class="cloud-field">
+      <label>Password</label>
+      <input id="cloudPassword" type="password" placeholder="Create or enter password">
+    </div>
+  </div>
+
+  <div class="cloud-actions">
+    <button class="cloud-primary" id="cloudSignUpBtn" type="button">Create account</button>
+    <button id="cloudSignInBtn" type="button">Sign in</button>
+    <button id="cloudSaveBtn" type="button">Save wedding to cloud</button>
+    <button id="cloudLoadBtn" type="button">Load my saved wedding</button>
+  </div>
+
+  <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+
+  <div class="cloud-grid">
+    <div class="cloud-field">
+      <label>Partner email</label>
+      <input id="partnerEmail" type="email" placeholder="partner@example.com">
+    </div>
+    <div class="cloud-field">
+      <label>Public share link</label>
+      <input id="publicShareLink" type="text" readonly placeholder="Created after you publish">
+    </div>
+  </div>
+
+  <div class="cloud-actions">
+    <button id="invitePartnerBtn" type="button">Invite partner</button>
+    <button id="publishWeddingBtn" type="button">Create read-only wedding link</button>
+    <button id="copyShareBtn" type="button">Copy share link</button>
+    <button id="newWeddingBtn" type="button">Start a fresh wedding</button>
+  </div>
+
+  <div class="cloud-status" id="cloudStatus">Not signed in. Your current device data remains local until you save it to the cloud.</div>
+</section>
+<section class="print-panel">
+  <h3 style="font:26px Georgia,serif;margin:0">Wedding record & printable copy</h3>
+  <p style="font-size:12px;color:var(--muted);line-height:1.55">Generate a clean record of the couple profile, planning progress, booked/shortlisted suppliers, payment notes and important dates. Couples can print or save it as PDF for hotels, coordinators, suppliers, disputes, family records or future reference.</p>
+  <div class="print-actions">
+    <button class="print-primary" type="button" onclick="prepareWeddingPrint()">Preview / Print wedding record</button>
+    <button type="button" onclick="downloadWeddingJSON()">Download data backup</button>
+  </div>
+</section>
+<div id="printableWedding" style="display:none"></div>
+
+ Their names, date, photos and progress will replace the previous local profile.</p>
 </div>
 
 <div class="hub"><div class="card"><h3>Suppliers</h3><p>Venues, hotels, caterers, photographers, videographers, florists, cakes, coordinators, planners, HMUA, DJs, bands, lights & sounds, gowns, suits/barong, rings, beverages, invitations, souvenirs, transport, styling/decor, rentals and more.</p><button onclick="go('vendors')">Browse suppliers</button></div><div class="card"><h3>Documents</h3><p>PSA, CENOMAR, city/municipal requirements and marriage license.</p><button onclick="go('docs')">Open documents</button></div><div class="card"><h3>Church & Ceremony</h3><p>Parish requirements, sponsors, Pre-Cana and ceremony planning.</p><button onclick="go('ceremony')">Open ceremony</button></div><div class="card"><h3>Budget Intelligence</h3><p>PHP budget allocation that updates when quotes and bookings change.</p><button onclick="go('budget')">Open budget</button></div><div class="card"><h3>Attire & Rings</h3><p>Gown, barong/suit, entourage fittings and wedding rings.</p><button onclick="go('attire')">Open attire</button></div><div class="card"><h3>Wedding Week</h3><p>Confirm suppliers, payments, schedule and backup plans.</p><button onclick="go('week')">Open command center</button></div></div>
@@ -127,7 +217,7 @@ Japan is now available as a planning location. Japanese supplier listings are be
 <div style="font-size:11px;color:#6e665e;margin:0 0 12px">
 Price range labels are descriptive only: Budget-friendly, Standard, Premium, and Luxury. Actual prices will be shown in the local market currency once confirmed by the supplier.
 </div>
-<div class="catalog" id="catalog"></div></section>
+<div class="catalog" id="catalog"></div><section><h2 style="font:30px Georgia,serif;margin:18px 0 6px">All wedding vendor services</h2><div class="marketplace-note"><b>Fair marketplace model:</b> Vowora should show the supplier’s quoted price clearly. Any Vowora service fee or commission should be disclosed before booking, kept modest, and never hidden inside the vendor price. Vendors choose whether to participate in paid leads/booking tools; couples always see what they are paying for.</div><div class="vendor-feature-grid"><div class="vendor-feature-card"><h4>Venue</h4><p>Ceremony/reception spaces, capacity, package inclusions, parking, corkage, curfew, accessibility and backup-weather options.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Hotel</h4><p>Room blocks, bridal suite, reception packages, guest accommodation, check-in/out, parking and shuttle options.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Caterer</h4><p>Per-head packages, buffet/plated service, tasting, dietary options, staffing, tableware and overtime charges.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Florist</h4><p>Bouquets, entourage flowers, ceremony styling, reception centerpieces, delivery/setup and teardown.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Cake</h4><p>Wedding cakes, dessert tables, tasting, design consultation, delivery, setup and dietary options.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Photo & Video</h4><p>Coverage hours, team size, prenup shoot, same-day edit, albums, drone, raw files and delivery timelines.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Photographer</h4><p>Portrait, ceremony and reception coverage, albums, prints, raw-file policy and turnaround.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Videographer</h4><p>Cinematic video, highlights, same-day edit, drone, audio capture and delivery timelines.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Coordinator</h4><p>Full planning, partial planning, on-the-day coordination, supplier management and timeline control.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Planner</h4><p>Budget planning, concept development, supplier sourcing, contracts, scheduling and wedding-day execution.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>HMUA</h4><p>Bride/groom/entourage packages, trial session, touch-ups, travel fees and early-call charges.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>DJ / Entertainment</h4><p>DJ, emcee, playlist planning, equipment, overtime and reception program support.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Band / Live Music</h4><p>Ceremony music, reception band, acoustic sets, song requests, sound requirements and overtime.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Lights & Sounds</h4><p>PA system, microphones, stage lights, uplighting, LED wall, technician and backup equipment.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Dress / Gown</h4><p>Ready-to-wear, rental, custom design, fittings, alterations, accessories and return terms.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Suit / Barong</h4><p>Rental or custom suit/barong, fittings, alterations, accessories and entourage packages.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Rings / Jewelry</h4><p>Wedding bands, customization, resizing, engraving, warranties and authenticity documentation.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Beverage / Mobile Bar</h4><p>Open bar packages, mocktails, coffee cart, glassware, bartenders, corkage and service duration.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Invitations</h4><p>Digital and printed invitations, RSVP cards, menus, place cards, signage and delivery timelines.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Souvenirs</h4><p>Guest favors, personalized gifts, packaging, quantity discounts and lead times.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Transport</h4><p>Bridal car, guest shuttle, airport transfer, driver hours, route planning and overtime.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Styling / Decor</h4><p>Theme design, stage, aisle, ceiling, tablescape, props, setup/teardown and rental inventory.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Church / Ceremony Suppliers</h4><p>Church décor, ceremony musicians, candles, printing, coordinators and ceremony support.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Event Rentals</h4><p>Tables, chairs, linens, tents, stage, dance floor, generators, fans/AC and delivery/setup.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Bridal Car / Wedding Car</h4><p>Luxury/classic cars, driver, decorations, waiting time, route and overtime.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Accommodation</h4><p>Hotels, resorts, apartments and room-block options for couple, family and guests.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Hair / Beauty</h4><p>Hair styling, grooming, nail services, skincare prep and entourage services.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div><div class="vendor-feature-card"><h4>Music / Extras</h4><p>String quartet, choir, saxophone, photo booth, fireworks alternatives, performers and specialty acts.</p><div class="mini">Search • Compare • Shortlist • Request quote • Message • Book when connected</div></div></div></section></section>
 
 <section id="budget" class="page"><div class="section"><div class="eyebrow">PHP BUDGET INTELLIGENCE</div><h2>Vowora suggests the working budget.</h2><p>Budget suggestions stay in Philippine pesos and adapt to city, guest count and style.</p></div><div class="card"><div class="formgrid"><div class="field"><label>City</label><select id="bcity"><option>Dumaguete</option><option>Bacolod</option><option>Cebu</option><option>Manila</option><option>Tokyo</option><option>Yokohama</option><option>Osaka</option><option>Kyoto</option><option>Nagoya</option><option>Fukuoka</option><option>Sapporo</option><option>Nagano</option></select></div><div class="field"><label>Guests</label><input id="bguests" type="number" value="150"></div><div class="field"><label>Style</label><select id="bstyle"><option>Practical</option><option selected>Elegant</option><option>Luxury</option></select></div><div class="field"><label>Maximum budget (optional)</label><input id="bmax" type="number"></div></div><button class="quote" style="margin-top:12px;padding:11px 15px;border-radius:999px;font-weight:800" onclick="calcBudget()">Suggest budget</button><div id="budgetResult" style="margin-top:16px"></div></div></section>
 <section id="docs" class="page"><div class="section"><div class="eyebrow">DOCUMENTS</div><h2>Philippine marriage requirements.</h2><p>Track PSA Birth Certificate, CENOMAR, IDs, cedula, pre-marriage seminar and marriage license. City/municipal requirements will be localized.</p></div><div class="card"><div class="todo"><label><input type="checkbox"><div><b>PSA Birth Certificate</b><p>Official civil registry document.</p></div></label><label><input type="checkbox"><div><b>CENOMAR</b><p>Certificate of No Marriage Record.</p></div></label><label><input type="checkbox"><div><b>Marriage License</b><p>Local Civil Registrar requirements depend on city and personal circumstances.</p></div></label></div></div></section>
@@ -381,7 +471,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 </script>
 
-<script src="config.js"></script>
+
 <script src="vendors-cloud.js">
 window.addEventListener('DOMContentLoaded',()=>{
   const input=document.getElementById('profileUpload');
@@ -398,4 +488,68 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="cloud-sync.js"></script>
+<script src="vendors-cloud.js">
+function collectVoworaWeddingRecord(){
+  const p=JSON.parse(localStorage.getItem('voworaProfile')||'{}');
+  const t=JSON.parse(localStorage.getItem('voworaTasks')||'{}');
+  const vendorShortlist=JSON.parse(localStorage.getItem('voworaVendorShortlist')||'[]');
+  return {
+    couple: [p.p1||'',p.p2||''].filter(Boolean).join(' & '),
+    partner1:p.p1||'',
+    partner2:p.p2||'',
+    weddingDate:p.date||'',
+    city:p.city||'',
+    guests:p.guests||0,
+    budget:p.budget||0,
+    tasks:t,
+    vendorShortlist,
+    exportedAt:new Date().toISOString()
+  };
+}
+function prepareWeddingPrint(){
+  const d=collectVoworaWeddingRecord();
+  const taskNames={
+    setup:'Complete wedding profile',
+    venue:'Choose ceremony & reception venue',
+    docs:'Start legal documents',
+    coord:'Book coordinator',
+    photo:'Book photo & video',
+    catering:'Book caterer',
+    attire:'Finalize attire',
+    invites:'Send invitations',
+    seating:'Finalize seating',
+    week:'Wedding Week readiness'
+  };
+  const tasks=Object.entries(d.tasks||{}).map(([k,v])=>`<tr><td>${taskNames[k]||k}</td><td>${v?'Completed':'Pending'}</td></tr>`).join('');
+  const vendorRows=(d.vendorShortlist||[]).map(v=>`<tr><td>${v.name||''}</td><td>${v.cat||''}</td><td>${v.city||''}</td></tr>`).join('');
+  const box=document.getElementById('printableWedding');
+  if(!box) return;
+  box.innerHTML=`
+    <h1>Vowora Wedding Record</h1>
+    <p><b>Couple:</b> ${d.couple||'Not set'}</p>
+    <p><b>Wedding date:</b> ${d.weddingDate||'Not set'} &nbsp; <b>Location:</b> ${d.city||'Not set'}</p>
+    <p><b>Guest count:</b> ${d.guests||0} &nbsp; <b>Working budget:</b> ${Number(d.budget||0).toLocaleString()}</p>
+    <h2>Planning status</h2>
+    <table border="1" cellspacing="0" cellpadding="8" style="border-collapse:collapse;width:100%"><tr><th>Task</th><th>Status</th></tr>${tasks||'<tr><td colspan="2">No task data yet</td></tr>'}</table>
+    <h2>Shortlisted / selected suppliers</h2>
+    <table border="1" cellspacing="0" cellpadding="8" style="border-collapse:collapse;width:100%"><tr><th>Supplier</th><th>Category</th><th>City</th></tr>${vendorRows||'<tr><td colspan="3">No supplier shortlist saved yet</td></tr>'}</table>
+    <p style="margin-top:24px;font-size:11px">Generated by Vowora on ${new Date().toLocaleString()}. This record is for planning/reference and does not replace signed supplier contracts or official receipts.</p>`;
+  box.style.display='block';
+  window.print();
+  setTimeout(()=>box.style.display='none',500);
+}
+function downloadWeddingJSON(){
+  const data=collectVoworaWeddingRecord();
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`vowora-wedding-backup-${(data.couple||'wedding').replace(/[^a-z0-9]+/gi,'-').toLowerCase()}.json`;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),500);
+}
+
+</script>
 </body></html>
