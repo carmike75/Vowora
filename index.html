@@ -373,22 +373,22 @@ function countdown(){
   const val = p.date || wdate.value;
 
   if (!val) {
-    daysLeft.textContent = 'Date not set';
-    d.textContent = '—';
-    h.textContent = '—';
-    m.textContent = '—';
-    s.textContent = '—';
+    daysLeft.textContent = '0 days';
+    d.textContent = '0';
+    h.textContent = '00';
+    m.textContent = '00';
+    s.textContent = '00';
     return;
   }
 
   const target = new Date(val + 'T12:00:00');
 
   if (Number.isNaN(target.getTime())) {
-    daysLeft.textContent = 'Date not set';
-    d.textContent = '—';
-    h.textContent = '—';
-    m.textContent = '—';
-    s.textContent = '—';
+    daysLeft.textContent = '0 days';
+    d.textContent = '0';
+    h.textContent = '00';
+    m.textContent = '00';
+    s.textContent = '00';
     return;
   }
 
@@ -477,8 +477,7 @@ function startNewCouple(){
   const ok=confirm('Start a new couple profile on this device? This will clear the current couple names, photos and planning progress stored in this browser.');
   if(!ok) return;
 
-  localStorage.removeItem('voworaProfile');
-  localStorage.removeItem('voworaTasks');
+  ['voworaProfile','voworaTasks','voworaBudgetTracker','voworaGuestList','voworaPlanDetails','voworaVendorShortlist'].forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('voworaTasks',JSON.stringify({setup:false}));
 
   p1.value='';
@@ -518,7 +517,13 @@ function applyProfile(){
     delete p.profile;
     p.slides=[];
     localStorage.setItem('voworaProfile',JSON.stringify(p));
-  }let names=(p.p1&&p.p2)?(p.p1+' & '+p.p2):(p.p1||p.p2||'Your Wedding');[sideNames,topNames].forEach(x=>x.textContent=names);heroNames.textContent=(p.p1||p.p2)?names:'Your Names Here';heroLocation.textContent=(p.city||'Your city')+', '+countryForCity(p.city||'')+' · Your wedding, fully connected.';sideDate.innerHTML=(p.date||'Wedding date not set')+'<br>'+(p.city||'Your city')+', '+countryForCity(p.city||'');if(p.p1)p1.value=p.p1;if(p.p2)p2.value=p.p2;if(p.date)wdate.value=p.date;if(p.city)wcity.value=p.city;if(p.guests)guestCount.value=p.guests;if(p.budget)workingBudget.value=p.budget;if(p.profile){
+  }
+  let names=(p.p1&&p.p2)?(p.p1+' & '+p.p2):(p.p1||p.p2||'Your Wedding');
+  [sideNames,topNames].forEach(x=>x.textContent=names);
+  heroNames.textContent=(p.p1||p.p2)?names:'Your Names Here';
+  heroLocation.textContent=p.city ? (p.city+', Philippines · Your wedding, fully connected.') : 'Choose your wedding city · Your wedding, fully connected.';
+  sideDate.innerHTML=(p.date||'Wedding date not set')+'<br>'+(p.city ? (p.city+', Philippines') : 'Choose your city');
+  if(p.p1)p1.value=p.p1;if(p.p2)p2.value=p.p2;if(p.date)wdate.value=p.date;if(p.city)wcity.value=p.city;if(p.guests!==''&&p.guests!=null)guestCount.value=p.guests;if(p.budget!==''&&p.budget!=null)workingBudget.value=p.budget;if(p.profile){
   document.querySelectorAll('.profile-photo,.mini-avatar').forEach(el=>{
     el.classList.remove('no-photo');
     el.style.setProperty('background-image',`url("${p.profile}")`,'important');
@@ -643,6 +648,15 @@ function ensureAllVendorCategories(){
   if(tabs){
     tabs.innerHTML=VOWORA_VENDOR_CATEGORIES.map(c=>`<button class="${active===c?'active':''}" onclick="active='${c}';fcat.value='${c}';render();ensureAllVendorCategories()">${c}</button>`).join('');
   }
+}
+
+// One-time production clean start: clears old development/test data once on each browser.
+// After this reset, real couple entries persist normally when they save and refresh.
+const VOWORA_FRESH_START_VERSION='2026-09-06-production-fresh-v1';
+if(localStorage.getItem('voworaFreshStartVersion')!==VOWORA_FRESH_START_VERSION){
+  ['voworaProfile','voworaTasks','voworaBudgetTracker','voworaGuestList','voworaPlanDetails','voworaVendorShortlist'].forEach(k=>localStorage.removeItem(k));
+  localStorage.setItem('voworaFreshStartVersion',VOWORA_FRESH_START_VERSION);
+  localStorage.setItem('voworaTasks',JSON.stringify({setup:false}));
 }
 
 ensureAllVendorCategories();
