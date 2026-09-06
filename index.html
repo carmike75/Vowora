@@ -134,7 +134,13 @@
 <div class="profile"><div class="profile-photo"></div><h3 id="sideNames">Your Wedding</h3><p id="sideDate">Wedding date not set<br>Choose your location</p></div>
 </aside>
 <main class="main">
-<div class="top"><div style="font-weight:700;letter-spacing:.04em">VOWORA: Everything for Your Wedding, in One Place.</div><div></div></div>
+<div class="top">
+  <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+    <span style="font-family:Georgia,serif;font-size:32px;font-weight:700;letter-spacing:.12em;color:#111;text-shadow:1px 1px 0 #bd9152,-1px -1px 0 #e0bc82">VOWORA</span>
+    <span style="font-size:21px;font-weight:800;color:#111">Everything for Your Wedding, in One Place.</span>
+  </div>
+  <div></div>
+</div>
 
 <section id="home" class="page active">
 <div class="personal-hero"><div class="slide active" id="s1"></div><div class="slide" id="s2"></div><div class="slide" id="s3"></div><div class="overlay"></div><div class="hero-content"><div><div class="eyebrow" style="color:#e2c69e">VOWORA PHILIPPINES</div><h1 id="heroNames">Your Names Here</h1><p id="heroLocation">Choose your wedding city · Your wedding, fully connected.</p></div><div class="countdown"><div class="small">Wedding countdown</div><div class="big" id="daysLeft">— days</div><div class="units"><div class="unit"><b id="d">0</b><span>DAYS</span></div><div class="unit"><b id="h">0</b><span>HRS</span></div><div class="unit"><b id="m">0</b><span>MIN</span></div><div class="unit"><b id="s">0</b><span>SEC</span></div></div></div></div></div>
@@ -142,7 +148,7 @@
 
 <div class="section"><div class="eyebrow">PERSONALIZE VOWORA</div><h2>Your wedding profile</h2><p>Each couple can enter or update their own names, wedding date, city and photos. Vowora then personalizes the entire experience for them.</p></div>
 <div class="card">
-<div class="formgrid"><div class="field"><label>Partner 1</label><input id="p1" placeholder="Partner 1 name" value=""></div><div class="field"><label>Partner 2</label><input id="p2" placeholder="Partner 2 name" value=""></div><div class="field"><label>Wedding date</label><input id="wdate" type="date" value=""></div><div class="field"><label>Wedding city</label><select id="wcity"><option>Dumaguete</option><option>Bacolod</option><option>Cebu</option><option>Manila</option><option>Tokyo</option><option>Yokohama</option><option>Osaka</option><option>Kyoto</option><option>Nagoya</option><option>Fukuoka</option><option>Sapporo</option><option>Nagano</option></select></div><div class="field"><label>Guest count</label><input id="guests" type="number" value="150"></div><div class="field"><label>Working budget (PHP / JPY)</label><input id="budget" type="number" value="600000"></div></div>
+<div class="formgrid"><div class="field"><label>Partner 1</label><input id="p1" placeholder="Partner 1 name" value=""></div><div class="field"><label>Partner 2</label><input id="p2" placeholder="Partner 2 name" value=""></div><div class="field"><label>Wedding date</label><input id="wdate" type="date" value=""></div><div class="field"><label>Wedding city</label><select id="wcity"><option value="">Choose city</option><option>Dumaguete</option><option>Bacolod</option><option>Cebu</option><option>Manila</option></select>
 <div class="uploads"><div class="upload"><label>Profile photo</label><input id="profileUpload" type="file" accept="image/*"></div><div class="upload"><label>Couple background photos (up to 3)</label><input id="slideUpload" type="file" accept="image/*" multiple></div></div>
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
 <button class="quote" style="padding:11px 15px;border-radius:999px;font-weight:800" onclick="saveProfile()">Save / Update wedding profile</button>
