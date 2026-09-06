@@ -308,7 +308,48 @@ function currencySymbolForCity(city){
   return JAPAN_CITIES.includes(city) ? '¥' : '₱';
 }
 
-function countdown(){let p=JSON.parse(localStorage.getItem('voworaProfile')||'{}'),val=p.date||wdate.value,target=new Date(val+'T12:00:00'),diff=Math.max(0,target-new Date()),days=Math.floor(diff/86400000);diff%=86400000;let hrs=Math.floor(diff/3600000);diff%=3600000;let mins=Math.floor(diff/60000);diff%=60000;let sec=Math.floor(diff/1000);daysLeft.textContent=days+' days';d.textContent=days;h.textContent=String(hrs).padStart(2,'0');m.textContent=String(mins).padStart(2,'0');s.textContent=String(sec).padStart(2,'0')}
+function countdown(){
+  const p = JSON.parse(localStorage.getItem('voworaProfile') || '{}');
+  const val = p.date || wdate.value;
+
+  if (!val) {
+    daysLeft.textContent = 'Date not set';
+    d.textContent = '—';
+    h.textContent = '—';
+    m.textContent = '—';
+    s.textContent = '—';
+    return;
+  }
+
+  const target = new Date(val + 'T12:00:00');
+
+  if (Number.isNaN(target.getTime())) {
+    daysLeft.textContent = 'Date not set';
+    d.textContent = '—';
+    h.textContent = '—';
+    m.textContent = '—';
+    s.textContent = '—';
+    return;
+  }
+
+  let diff = Math.max(0, target - new Date());
+  const days = Math.floor(diff / 86400000);
+
+  diff %= 86400000;
+  const hrs = Math.floor(diff / 3600000);
+
+  diff %= 3600000;
+  const mins = Math.floor(diff / 60000);
+
+  diff %= 60000;
+  const sec = Math.floor(diff / 1000);
+
+  daysLeft.textContent = days + ' days';
+  d.textContent = days;
+  h.textContent = String(hrs).padStart(2,'0');
+  m.textContent = String(mins).padStart(2,'0');
+  s.textContent = String(sec).padStart(2,'0');
+}let p=JSON.parse(localStorage.getItem('voworaProfile')||'{}'),val=p.date||wdate.value,target=new Date(val+'T12:00:00'),diff=Math.max(0,target-new Date()),days=Math.floor(diff/86400000);diff%=86400000;let hrs=Math.floor(diff/3600000);diff%=3600000;let mins=Math.floor(diff/60000);diff%=60000;let sec=Math.floor(diff/1000);daysLeft.textContent=days+' days';d.textContent=days;h.textContent=String(hrs).padStart(2,'0');m.textContent=String(mins).padStart(2,'0');s.textContent=String(sec).padStart(2,'0')}
 function f2data(file){return new Promise((res,rej)=>{let r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
 async function saveProfile(){
   let old=JSON.parse(localStorage.getItem('voworaProfile')||'{}');
