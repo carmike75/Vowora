@@ -43,9 +43,12 @@
     const email = $("cloudEmail")?.value.trim();
     const password = $("cloudPassword")?.value;
     if (!email || !password) return status("Enter your email and password.");
+    status("Signing in...");
     const { data, error } = await sb.auth.signInWithPassword({ email, password });
     if (error) return status("Sign-in error: " + error.message);
-    status("Signed in as " + data.user.email + ". You can now save or load your wedding.");
+    status("Signed in as " + data.user.email + ". Looking for your saved wedding...");
+    await acceptInviteForUser(data.user);
+    await loadWedding();
   }
 
   async function saveWedding() {
@@ -276,15 +279,37 @@
     status("Read-only wedding view. This shared page cannot change the couple's saved data.");
   }
 
-  window.addEventListener("DOMContentLoaded", async () => {
-    $("cloudSignUpBtn")?.addEventListener("click", signUp);
-    $("cloudSignInBtn")?.addEventListener("click", signIn);
-    $("cloudSaveBtn")?.addEventListener("click", saveWedding);
-    $("cloudLoadBtn")?.addEventListener("click", loadWedding);
-    $("invitePartnerBtn")?.addEventListener("click", invitePartner);
-    $("publishWeddingBtn")?.addEventListener("click", publishWedding);
-    $("copyShareBtn")?.addEventListener("click", copyShare);
-    $("newWeddingBtn")?.addEventListener("click", newWedding);
+  window.VOWORA_CLOUD = {
+    signUp, signIn, saveWedding, loadWedding, invitePartner,
+    publishWedding, copyShare, newWedding
+  };
+
+  function bindCloudButton(id, handler) {
+    const el = $(id);
+    if (!el || el.dataset.voworaBound === "1") return;
+    el.dataset.voworaBound = "1";
+    el.disabled = false;
+    el.style.pointerEvents = "auto";
+    el.addEventListener("click", async (ev) => {
+      ev.preventDefault();
+      try {
+        await handler();
+      } catch (err) {
+        console.error(err);
+        status("Cloud action error: " + (err?.message || err));
+      }
+    });
+  }
+
+  async function initCloudControls() {
+    bindCloudButton("cloudSignUpBtn", signUp);
+    bindCloudButton("cloudSignInBtn", signIn);
+    bindCloudButton("cloudSaveBtn", saveWedding);
+    bindCloudButton("cloudLoadBtn", loadWedding);
+    bindCloudButton("invitePartnerBtn", invitePartner);
+    bindCloudButton("publishWeddingBtn", publishWedding);
+    bindCloudButton("copyShareBtn", copyShare);
+    bindCloudButton("newWeddingBtn", newWedding);
 
     const { data: { user } } = await sb.auth.getUser();
     if (user) {
@@ -293,5 +318,11 @@
       await acceptInviteForUser(user);
     }
     await renderPublicWeddingIfNeeded();
-  });
+  }
+
+  if (document.readyState === "loading") {
+    window.addEventListener("DOMContentLoaded", initCloudControls, { once: true });
+  } else {
+    initCloudControls();
+  }
 })();
