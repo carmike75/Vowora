@@ -33,11 +33,26 @@
     ["cloudSaveBtn","cloudLoadBtn","invitePartnerBtn","publishWeddingBtn","copyShareBtn"].forEach(id => {
       const el = $(id);
       if (!el) return;
-      el.disabled = !signedIn;
-      el.style.opacity = signedIn ? "1" : ".55";
-      el.style.cursor = signedIn ? "pointer" : "not-allowed";
+      // Keep actions clickable at all times. Their handlers explain when sign-in is required.
+      el.disabled = false;
+      el.style.pointerEvents = "auto";
+      el.style.opacity = "1";
+      el.style.cursor = "pointer";
+      el.setAttribute("aria-disabled","false");
     });
-    if ($("cloudSignInBtn")) $("cloudSignInBtn").textContent = signedIn ? "Signed in" : "Sign in";
+    if ($("cloudSignInBtn")) {
+      $("cloudSignInBtn").disabled = false;
+      $("cloudSignInBtn").style.pointerEvents = "auto";
+      $("cloudSignInBtn").style.opacity = "1";
+      $("cloudSignInBtn").style.cursor = "pointer";
+      $("cloudSignInBtn").textContent = signedIn ? "Signed in" : "Sign in";
+    }
+    if ($("cloudSignUpBtn")) {
+      $("cloudSignUpBtn").disabled = false;
+      $("cloudSignUpBtn").style.pointerEvents = "auto";
+      $("cloudSignUpBtn").style.opacity = "1";
+      $("cloudSignUpBtn").style.cursor = "pointer";
+    }
   }
 
   async function signUp() {
@@ -45,7 +60,13 @@
     const password = $("cloudPassword")?.value;
     if (!email || !password) return status("Enter an email and password first.");
     const { data, error } = await sb.auth.signUp({ email, password });
-    if (error) return status("Sign-up error: " + error.message);
+    if (error) {
+      const msg = String(error.message || error);
+      if (/rate limit/i.test(msg)) {
+        return status("Account email request limit reached. Please wait a few minutes, then try Create account again. If this email already has an account, use Sign in instead.");
+      }
+      return status("Sign-up error: " + msg);
+    }
     status(data.user?.identities?.length === 0
       ? "This email may already have an account. Try Sign in."
       : "Account created. If email confirmation is enabled, confirm your email, then sign in.");
@@ -57,7 +78,12 @@
     if (!email || !password) return status("Enter your email and password.");
     status("Signing in...");
     const { data, error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) return status("Sign-in error: " + error.message);
+    if (error) {
+      const msg = String(error.message || error);
+      if (/email not confirmed/i.test(msg)) return status("Please confirm this email from your inbox first, then click Sign in again.");
+      if (/invalid login credentials/i.test(msg)) return status("Sign-in failed. Check the email/password. If this is a new email, create the account first.");
+      return status("Sign-in error: " + msg);
+    }
     setCloudUiSignedIn(data.user);
     status("Signed in as " + data.user.email + ". Looking for your saved wedding...");
     await acceptInviteForUser(data.user);
