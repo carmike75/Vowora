@@ -28,6 +28,18 @@
     return data?.user || null;
   }
 
+  function setCloudUiSignedIn(user) {
+    const signedIn = !!user;
+    ["cloudSaveBtn","cloudLoadBtn","invitePartnerBtn","publishWeddingBtn","copyShareBtn"].forEach(id => {
+      const el = $(id);
+      if (!el) return;
+      el.disabled = !signedIn;
+      el.style.opacity = signedIn ? "1" : ".55";
+      el.style.cursor = signedIn ? "pointer" : "not-allowed";
+    });
+    if ($("cloudSignInBtn")) $("cloudSignInBtn").textContent = signedIn ? "Signed in" : "Sign in";
+  }
+
   async function signUp() {
     const email = $("cloudEmail")?.value.trim();
     const password = $("cloudPassword")?.value;
@@ -46,6 +58,7 @@
     status("Signing in...");
     const { data, error } = await sb.auth.signInWithPassword({ email, password });
     if (error) return status("Sign-in error: " + error.message);
+    setCloudUiSignedIn(data.user);
     status("Signed in as " + data.user.email + ". Looking for your saved wedding...");
     await acceptInviteForUser(data.user);
     await loadWedding();
@@ -290,6 +303,7 @@
     el.dataset.voworaBound = "1";
     el.disabled = false;
     el.style.pointerEvents = "auto";
+    if (el.getAttribute("onclick")) return;
     el.addEventListener("click", async (ev) => {
       ev.preventDefault();
       try {
@@ -312,10 +326,13 @@
     bindCloudButton("newWeddingBtn", newWedding);
 
     const { data: { user } } = await sb.auth.getUser();
+    setCloudUiSignedIn(user);
     if (user) {
       if ($("cloudEmail")) $("cloudEmail").value = user.email || "";
-      status("Signed in as " + (user.email || "user") + ".");
+      status("Signed in as " + (user.email || "user") + ". Cloud save and load are ready.");
       await acceptInviteForUser(user);
+    } else {
+      status("Not signed in. Create an account once, or sign in with an existing account.");
     }
     await renderPublicWeddingIfNeeded();
   }
