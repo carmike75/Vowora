@@ -815,10 +815,10 @@ html,body{background:#f4eee4!important}
   </div>
 
   <div class="cloud-actions">
-    <button class="cloud-primary" id="cloudSignUpBtn" type="button">Create account</button>
-    <button id="cloudSignInBtn" type="button">Sign in</button>
-    <button id="cloudSaveBtn" type="button">Save wedding to cloud</button>
-    <button id="cloudLoadBtn" type="button">Load my saved wedding</button>
+    <button class="cloud-primary" id="cloudSignUpBtn" type="button" onclick="window.VOWORA_CLOUD?.signUp?.()">Create account</button>
+    <button id="cloudSignInBtn" type="button" onclick="window.VOWORA_CLOUD?.signIn?.()">Sign in</button>
+    <button id="cloudSaveBtn" type="button" onclick="window.VOWORA_CLOUD?.saveWedding?.()">Save wedding to cloud</button>
+    <button id="cloudLoadBtn" type="button" onclick="window.VOWORA_CLOUD?.loadWedding?.()">Load my saved wedding</button>
   </div>
 
   <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
@@ -836,10 +836,10 @@ html,body{background:#f4eee4!important}
   <p class="partner-help">This invitation is optional. Use it only if your partner or trusted co-planner should have their own Vowora login and access the same wedding plan from another device.</p>
 
   <div class="cloud-actions">
-    <button id="invitePartnerBtn" type="button">Invite partner / co-planner</button>
-    <button id="publishWeddingBtn" type="button">Create read-only wedding link</button>
-    <button id="copyShareBtn" type="button">Copy share link</button>
-    <button id="newWeddingBtn" type="button">Start a fresh wedding</button>
+    <button id="invitePartnerBtn" type="button" onclick="window.VOWORA_CLOUD?.invitePartner?.()">Invite partner / co-planner</button>
+    <button id="publishWeddingBtn" type="button" onclick="window.VOWORA_CLOUD?.publishWedding?.()">Create read-only wedding link</button>
+    <button id="copyShareBtn" type="button" onclick="window.VOWORA_CLOUD?.copyShare?.()">Copy share link</button>
+    <button id="newWeddingBtn" type="button" onclick="window.VOWORA_CLOUD?.newWedding?.()">Start a fresh wedding</button>
   </div>
 
   <div class="cloud-status" id="cloudStatus">Not signed in. Your current device data remains local until you save it to the cloud.</div>
