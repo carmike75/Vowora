@@ -307,7 +307,9 @@
     if (typeof window.countdown === "function") window.countdown();
     setCloudUiSignedIn(null);
     status("Fresh wedding ready. No couple is signed in. Enter the new couple details or create/sign in to their Vowora account.");
-    window.scrollTo({top:0,behavior:"smooth"});
+
+    // A full reload is intentional: it proves the old auth session and old form state are gone.
+    location.replace(location.origin + location.pathname + "?fresh=" + Date.now());
   }
 
   async function acceptInviteForUser(user) {
@@ -397,6 +399,12 @@
     bindCloudButton("copyShareBtn", copyShare);
     bindCloudButton("newWeddingBtn", newWedding);
 
+    const freshStart = new URLSearchParams(location.search).has("fresh");
+    if (freshStart) {
+      try { await sb.auth.signOut(); } catch (_) {}
+      ["cloudEmail","cloudPassword","partnerEmail","publicShareLink"].forEach(id => { const el=$(id); if(el) el.value=""; });
+      history.replaceState({}, "", location.pathname);
+    }
     const { data: { user } } = await sb.auth.getUser();
     setCloudUiSignedIn(user);
     if (user) {
