@@ -211,6 +211,11 @@
     const t = {};
     (taskRows || []).forEach(r => t[r.task_key] = !!r.completed);
 
+    // Keep locally saved background photos when cloud data is loaded on the same device.
+    // The current Supabase weddings table stores the profile photo but has no background-photo column yet.
+    const localProfile = profile();
+    const sameCouple = (!localProfile.p1 || localProfile.p1 === (wedding.partner1 || "")) &&
+                       (!localProfile.p2 || localProfile.p2 === (wedding.partner2 || ""));
     const p = {
       p1: wedding.partner1 || "",
       p2: wedding.partner2 || "",
@@ -218,8 +223,8 @@
       city: wedding.city || "",
       guests: wedding.guest_count || 0,
       budget: Number(wedding.budget_php || 0),
-      profile: wedding.profile_photo_url || null,
-      slides: []
+      profile: wedding.profile_photo_url || (sameCouple ? localProfile.profile : null) || null,
+      slides: sameCouple && Array.isArray(localProfile.slides) ? localProfile.slides.slice(0,3) : []
     };
 
     setProfile(p, t);

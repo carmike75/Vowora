@@ -794,7 +794,26 @@ html,body{background:#f4eee4!important}
     <div class="approved-quote">“Two hearts, one beautiful journey.”</div>
     <div id="profileEditor" class="approved-profile-editor" hidden>
       <div class="formgrid"><div class="field"><label>Partner 1</label><input id="p1" placeholder="Partner 1 name" value=""></div><div class="field"><label>Partner 2</label><input id="p2" placeholder="Partner 2 name" value=""></div><div class="field"><label>Wedding date</label><input id="wdate" type="date" value=""></div><div class="field"><label>Wedding city</label><select id="wcity"><option value="">Choose city</option><option>Dumaguete</option><option>Bacolod</option><option>Cebu</option><option>Manila</option></select></div><div class="field"><label>Guest count</label><input id="guestCount" type="number" min="0" placeholder="Enter guest count"></div><div class="field"><label>Working budget (PHP)</label><input id="workingBudget" type="number" min="0" placeholder="Enter working budget"></div><div class="field"><label>Contact email</label><input id="coupleEmail" type="email" placeholder="Email for quotations and wedding updates"></div><div class="field"><label>Cellphone number</label><input id="couplePhone" type="tel" placeholder="Mobile number for supplier replies"></div></div>
-<div class="uploads"><div class="upload"><label>Profile photo</label><input id="profileUpload" type="file" accept="image/*"></div><div class="upload"><label>Couple background photos (up to 3)</label><input id="slideUpload" type="file" accept="image/*" multiple></div></div>
+<div class="uploads">
+  <div class="upload">
+    <label>Profile photo</label>
+    <div id="savedProfilePhotoBox" style="display:none;margin:8px 0 10px">
+      <img id="savedProfilePhoto" alt="Current profile photo" style="width:96px;height:96px;object-fit:cover;border-radius:14px;border:1px solid var(--line);display:block;margin-bottom:7px">
+      <div style="font-size:12px;color:var(--muted)">Current saved photo. Choose a new photo below only to replace it.</div>
+    </div>
+    <input id="profileUpload" type="file" accept="image/*">
+    <div id="profileUploadHint" style="font-size:12px;color:var(--muted);margin-top:6px">No replacement selected.</div>
+  </div>
+  <div class="upload">
+    <label>Couple background photos (up to 3)</label>
+    <div id="savedSlidesBox" style="display:none;margin:8px 0 10px">
+      <div id="savedSlides" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:7px"></div>
+      <div style="font-size:12px;color:var(--muted)">Current saved background photos. Choose new photos below only to replace them.</div>
+    </div>
+    <input id="slideUpload" type="file" accept="image/*" multiple>
+    <div id="slideUploadHint" style="font-size:12px;color:var(--muted);margin-top:6px">No replacements selected.</div>
+  </div>
+</div>
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
 <button class="quote" style="padding:11px 15px;border-radius:999px;font-weight:800" onclick="saveProfile()">Save / Update wedding profile</button>
 <button style="padding:11px 15px;border-radius:999px;font-weight:800;border:1px solid var(--line);background:#fff;color:var(--ink)" onclick="startNewCouple()">Start a new couple profile</button>
@@ -1330,7 +1349,29 @@ function applyProfile(){
       hero.insertBefore(el,overlay);
     });
   }
-  if(use.length) document.documentElement.style.setProperty('--couple-bg',`url("${use[0]}")`);}
+  if(use.length) document.documentElement.style.setProperty('--couple-bg',`url("${use[0]}")`);
+
+  // Show saved photos separately from browser file inputs. Browsers intentionally clear file inputs after reload.
+  const savedProfileBox=document.getElementById('savedProfilePhotoBox');
+  const savedProfileImg=document.getElementById('savedProfilePhoto');
+  if(savedProfileBox&&savedProfileImg){
+    if(p.profile){ savedProfileImg.src=p.profile; savedProfileBox.style.display='block'; }
+    else { savedProfileImg.removeAttribute('src'); savedProfileBox.style.display='none'; }
+  }
+  const savedSlidesBox=document.getElementById('savedSlidesBox');
+  const savedSlides=document.getElementById('savedSlides');
+  if(savedSlidesBox&&savedSlides){
+    savedSlides.innerHTML='';
+    const currentSlides=Array.isArray(p.slides)?p.slides.slice(0,3):[];
+    currentSlides.forEach((url,i)=>{
+      const img=document.createElement('img');
+      img.src=url; img.alt='Current background photo '+(i+1);
+      img.style.cssText='width:96px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--line)';
+      savedSlides.appendChild(img);
+    });
+    savedSlidesBox.style.display=currentSlides.length?'block':'none';
+  }
+}
 let si=0;
 setInterval(()=>{
   const a=[...document.querySelectorAll('.personal-hero .slide')];
@@ -1498,6 +1539,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   if(input){
     input.addEventListener('change',async()=>{
       if(!input.files || !input.files[0]) return;
+      const hint=document.getElementById('profileUploadHint'); if(hint) hint.textContent='Replacement selected: '+input.files[0].name;
       const preview=await f2data(input.files[0]);
       document.querySelectorAll('.profile-photo,.mini-avatar').forEach(el=>{
         el.style.setProperty('background-image',`url("${preview}")`,'important');
@@ -1508,6 +1550,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     slidesInput.addEventListener('change',async()=>{
       const files=[...slidesInput.files].slice(0,3);
       if(!files.length) return;
+      const hint=document.getElementById('slideUploadHint'); if(hint) hint.textContent=files.length+' replacement photo'+(files.length===1?'':'s')+' selected.';
       const previews=await Promise.all(files.map(f2data));
       const hero=document.querySelector('.personal-hero');
       if(!hero) return;
