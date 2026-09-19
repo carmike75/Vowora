@@ -337,7 +337,9 @@
       guests: wedding.guest_count || 0,
       budget: Number(wedding.budget_php || 0),
       profile: wedding.profile_photo_url || (sameCouple ? localProfile.profile : null) || null,
-      slides: cloudSlides.length ? cloudSlides : (sameCouple && Array.isArray(localProfile.slides) ? localProfile.slides.slice(0,3) : [])
+      slides: cloudSlides.length ? cloudSlides : (sameCouple && Array.isArray(localProfile.slides) ? localProfile.slides.slice(0,3) : []),
+      email: (sameCouple && localProfile.email) ? localProfile.email : (user.email || ""),
+      phone: (sameCouple && localProfile.phone) ? localProfile.phone : ""
     };
 
     setProfile(p, t);
@@ -527,6 +529,12 @@
     setCloudUiSignedIn(user);
     if (user) {
       if ($("cloudEmail")) $("cloudEmail").value = user.email || "";
+      const localWeddingProfile = profile();
+      if (!localWeddingProfile.email && user.email) {
+        localWeddingProfile.email = user.email;
+        localStorage.setItem("voworaProfile", JSON.stringify(localWeddingProfile));
+        if ($("coupleEmail")) $("coupleEmail").value = user.email;
+      }
       if (user.email_confirmed_at) {
         status("Email verified. Signed in securely as " + (user.email || "user") + ". Cloud save and load are ready.");
       } else {
