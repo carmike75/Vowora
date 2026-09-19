@@ -832,7 +832,10 @@ html,body{background:#f4eee4!important}
     </div>
     <div class="cloud-field">
       <label>Password <span class="secure-note">— secure sign-in only</span></label>
-      <input id="cloudPassword" type="password" placeholder="Create or enter password" autocomplete="current-password">
+      <div style="position:relative">
+        <input id="cloudPassword" type="password" placeholder="Create or enter password" autocomplete="current-password" style="padding-right:112px;width:100%">
+        <button id="toggleCloudPassword" type="button" aria-label="Show password" aria-pressed="false" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:7px 11px;font-weight:800;cursor:pointer;white-space:nowrap">👁 Show</button>
+      </div>
     </div>
   </div>
 
@@ -1298,6 +1301,19 @@ function startNewCouple(){
   profileUpload.value='';
   slideUpload.value='';
   ['cloudEmail','cloudPassword','partnerEmail','publicShareLink','quoteEmail','quotePhone'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const pwToggle=document.getElementById('toggleCloudPassword');
+  const pwInput=document.getElementById('cloudPassword');
+  if(pwToggle&&pwInput){
+    pwToggle.addEventListener('click',()=>{
+      const showing=pwInput.type==='text';
+      pwInput.type=showing?'password':'text';
+      pwToggle.textContent=showing?'👁 Show':'🙈 Hide';
+      pwToggle.setAttribute('aria-label',showing?'Show password':'Hide password');
+      pwToggle.setAttribute('aria-pressed',String(!showing));
+      pwInput.focus({preventScroll:true});
+      try{pwInput.setSelectionRange(pwInput.value.length,pwInput.value.length);}catch(e){}
+    });
+  }
   ['voworaBudget','voworaBudgetItems','voworaGuests','voworaGuestList','voworaVendorShortlist','voworaDocuments','voworaCeremony','voworaAttire','voworaWeddingWeek','voworaQuoteContact'].forEach(k=>localStorage.removeItem(k));
 
   document.querySelectorAll('.profile-photo,.mini-avatar').forEach(el=>{
