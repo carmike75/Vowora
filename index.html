@@ -747,10 +747,10 @@ html,body{background:#f4eee4!important}
     <div class="exact-top-tagline">Everything for Your Wedding, in One Place.</div>
   </div>
   <div class="exact-top-actions">
-    <button class="top-icon-btn" type="button" aria-label="Search">
+    <button class="top-icon-btn" type="button" aria-label="Search" onclick="openVoworaSearch()">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
     </button>
-    <button class="top-icon-btn" type="button" aria-label="Notifications">
+    <button class="top-icon-btn" type="button" aria-label="Notifications" onclick="openVoworaNotifications()">
       <svg viewBox="0 0 24 24"><path d="M6 17h12l-1.5-2V10a4.5 4.5 0 0 0-9 0v5z"/><path d="M10 20h4"/></svg>
     </button>
     <div class="exact-top-divider small"></div>
@@ -976,6 +976,20 @@ function closeMobileMenu(){
 function go(id){closeMobileMenu();document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));syncDirectoryCities();if(id==='vendors')render();if(id==='ceremony')renderCeremonyDirectory();if(id==='attire')renderAttireDirectory();if(id==='budget')renderBudgetTracker();if(id==='plan')renderPlanSummary();if(id==='guests')renderGuestList();}
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMobileMenu();});
+
+function openVoworaSearch(){
+  const q=prompt('Search Vowora sections: My Wedding, Our Plan, Suppliers, Budget, Documents, Church & Ceremony, Attire & Rings, Guests, Wedding Week');
+  if(!q)return;
+  const s=q.toLowerCase();
+  const map=[['home',['wedding','profile','my wedding']],['plan',['plan','checklist','task']],['vendors',['supplier','vendor']],['budget',['budget','expense']],['docs',['document','requirement']],['ceremony',['church','ceremony']],['attire',['attire','ring','dress','suit']],['guests',['guest','rsvp']],['week',['week','schedule','timeline']]];
+  const hit=map.find(([,keys])=>keys.some(k=>s.includes(k)||k.includes(s)));
+  if(hit)go(hit[0]); else alert('No matching Vowora section found.');
+}
+function openVoworaNotifications(){
+  const status=document.getElementById('cloudStatus')?.textContent?.trim();
+  alert(status || 'No new Vowora notifications.');
+}
+
 function setupFilters(){fcat.innerHTML=cats.map(c=>`<option>${c}</option>`).join('');if(!cats.includes(active))active=cats[0]||'Venue';fcat.value=active;tabs.innerHTML=cats.map(c=>`<button class="${active===c?'active':''}" onclick="active='${c}';fcat.value='${c}';setupFilters();render()">${c}</button>`).join('');}
 function getApprovedVendorListings(){
   try{return JSON.parse(localStorage.getItem('voworaApprovedVendors')||'[]')||[];}catch(e){return [];}
@@ -1249,8 +1263,12 @@ function startNewCouple(){
   wcity.value='';
   guestCount.value='';
   workingBudget.value='';
+  coupleEmail.value='';
+  couplePhone.value='';
   profileUpload.value='';
   slideUpload.value='';
+  ['cloudEmail','cloudPassword','partnerEmail','publicShareLink','quoteEmail','quotePhone'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['voworaBudget','voworaBudgetItems','voworaGuests','voworaGuestList','voworaVendorShortlist','voworaDocuments','voworaCeremony','voworaAttire','voworaWeddingWeek','voworaQuoteContact'].forEach(k=>localStorage.removeItem(k));
 
   document.querySelectorAll('.profile-photo,.mini-avatar').forEach(el=>{
     el.style.setProperty('background-image','none','important');
