@@ -252,7 +252,22 @@
       if (taskErr) return status("Wedding details saved, but task sync failed: " + taskErr.message);
     }
 
-    status("Wedding saved to the cloud successfully.");
+    // Sync up to three couple background photos to the existing wedding_photos table.
+    // Data URLs are already resized/compressed by the profile uploader.
+    const slides = Array.isArray(p.slides) ? p.slides.slice(0,3) : [];
+    const { error: photoDeleteErr } = await sb.from("wedding_photos").delete().eq("wedding_id", currentWeddingId);
+    if (photoDeleteErr) return status("Wedding details saved, but background photo sync failed: " + photoDeleteErr.message);
+    if (slides.length) {
+      const photoRows = slides.map((url, i) => ({
+        wedding_id: currentWeddingId,
+        photo_url: url,
+        sort_order: i
+      }));
+      const { error: photoInsertErr } = await sb.from("wedding_photos").insert(photoRows);
+      if (photoInsertErr) return status("Wedding details saved, but background photo sync failed: " + photoInsertErr.message);
+    }
+
+    status("Wedding and background photos saved to the cloud successfully.");
   }
 
   async function loadWedding() {
@@ -300,11 +315,20 @@
     const t = {};
     (taskRows || []).forEach(r => t[r.task_key] = !!r.completed);
 
-    // Keep locally saved background photos when cloud data is loaded on the same device.
-    // The current Supabase weddings table stores the profile photo but has no background-photo column yet.
+    // Load the couple background photos from Supabase so they follow the couple
+    // across browsers/devices. If none exist yet, preserve same-device local photos.
+    const { data: cloudPhotos, error: photoLoadErr } = await sb
+      .from("wedding_photos")
+      .select("photo_url,sort_order")
+      .eq("wedding_id", currentWeddingId)
+      .order("sort_order", { ascending: true })
+      .limit(3);
+    if (photoLoadErr) return status("Wedding found, but background photo load failed: " + photoLoadErr.message);
+
     const localProfile = profile();
     const sameCouple = (!localProfile.p1 || localProfile.p1 === (wedding.partner1 || "")) &&
                        (!localProfile.p2 || localProfile.p2 === (wedding.partner2 || ""));
+    const cloudSlides = (cloudPhotos || []).map(r => r.photo_url).filter(Boolean).slice(0,3);
     const p = {
       p1: wedding.partner1 || "",
       p2: wedding.partner2 || "",
@@ -313,7 +337,7 @@
       guests: wedding.guest_count || 0,
       budget: Number(wedding.budget_php || 0),
       profile: wedding.profile_photo_url || (sameCouple ? localProfile.profile : null) || null,
-      slides: sameCouple && Array.isArray(localProfile.slides) ? localProfile.slides.slice(0,3) : []
+      slides: cloudSlides.length ? cloudSlides : (sameCouple && Array.isArray(localProfile.slides) ? localProfile.slides.slice(0,3) : [])
     };
 
     setProfile(p, t);
