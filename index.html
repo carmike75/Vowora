@@ -801,8 +801,9 @@ html,body{background:#f4eee4!important}
       <img id="savedProfilePhoto" alt="Current profile photo" style="width:96px;height:96px;object-fit:cover;border-radius:14px;border:1px solid var(--line);display:block;margin-bottom:7px">
       <div style="font-size:12px;color:var(--muted)">Current saved photo. Choose a new photo below only to replace it.</div>
     </div>
-    <input id="profileUpload" type="file" accept="image/*">
-    <div id="profileUploadHint" style="font-size:12px;color:var(--muted);margin-top:6px">No replacement selected.</div>
+    <label for="profileUpload" style="display:inline-block;padding:9px 13px;border-radius:999px;background:#0b1823;color:#fff;font-weight:800;cursor:pointer;margin-top:4px">Replace profile photo</label>
+    <input id="profileUpload" type="file" accept="image/*" style="position:absolute;left:-9999px">
+    <div id="profileUploadHint" style="font-size:12px;color:var(--muted);margin-top:7px">No replacement selected.</div>
   </div>
   <div class="upload">
     <label>Couple background photos (up to 3)</label>
@@ -810,8 +811,9 @@ html,body{background:#f4eee4!important}
       <div id="savedSlides" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:7px"></div>
       <div style="font-size:12px;color:var(--muted)">Current saved background photos. Choose new photos below only to replace them.</div>
     </div>
-    <input id="slideUpload" type="file" accept="image/*" multiple>
-    <div id="slideUploadHint" style="font-size:12px;color:var(--muted);margin-top:6px">No replacements selected.</div>
+    <label for="slideUpload" style="display:inline-block;padding:9px 13px;border-radius:999px;background:#0b1823;color:#fff;font-weight:800;cursor:pointer;margin-top:4px">Replace background photos</label>
+    <input id="slideUpload" type="file" accept="image/*" multiple style="position:absolute;left:-9999px">
+    <div id="slideUploadHint" style="font-size:12px;color:var(--muted);margin-top:7px">No replacements selected.</div>
   </div>
 </div>
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
@@ -1263,10 +1265,18 @@ async function saveProfile(){
   }
 
   localStorage.setItem('voworaTasks',JSON.stringify(state()));
+  // A browser file input is only a temporary selector. Once the image is saved,
+  // clear the selector so the UI shows the stored image as the single source of truth.
+  profileUpload.value='';
+  slideUpload.value='';
+  const profileHint=document.getElementById('profileUploadHint');
+  const slideHint=document.getElementById('slideUploadHint');
+  if(profileHint) profileHint.textContent='No replacement selected.';
+  if(slideHint) slideHint.textContent='No replacements selected.';
   applyProfile();
   syncDirectoryCities();renderCeremonyDirectory();renderAttireDirectory();
   renderTodo();
-  alert('Wedding profile saved. Your names and wedding photos are now applied.');
+  alert('Wedding profile saved. Any selected replacement photos have replaced the previous saved photos.');
 }
 
 function startNewCouple(){
@@ -1539,8 +1549,11 @@ window.addEventListener('DOMContentLoaded',()=>{
   if(input){
     input.addEventListener('change',async()=>{
       if(!input.files || !input.files[0]) return;
-      const hint=document.getElementById('profileUploadHint'); if(hint) hint.textContent='Replacement selected: '+input.files[0].name;
+      const hint=document.getElementById('profileUploadHint'); if(hint) hint.textContent='New profile photo selected. Click Save / Update wedding profile to keep it.';
       const preview=await f2data(input.files[0]);
+      const savedImg=document.getElementById('savedProfilePhoto');
+      const savedBox=document.getElementById('savedProfilePhotoBox');
+      if(savedImg){ savedImg.src=preview; if(savedBox) savedBox.style.display='block'; }
       document.querySelectorAll('.profile-photo,.mini-avatar').forEach(el=>{
         el.style.setProperty('background-image',`url("${preview}")`,'important');
       });
@@ -1550,8 +1563,20 @@ window.addEventListener('DOMContentLoaded',()=>{
     slidesInput.addEventListener('change',async()=>{
       const files=[...slidesInput.files].slice(0,3);
       if(!files.length) return;
-      const hint=document.getElementById('slideUploadHint'); if(hint) hint.textContent=files.length+' replacement photo'+(files.length===1?'':'s')+' selected.';
+      const hint=document.getElementById('slideUploadHint'); if(hint) hint.textContent=files.length+' new background photo'+(files.length===1?'':'s')+' selected. Click Save / Update wedding profile to keep '+(files.length===1?'it.':'them.');
       const previews=await Promise.all(files.map(f2data));
+      const savedSlides=document.getElementById('savedSlides');
+      const savedSlidesBox=document.getElementById('savedSlidesBox');
+      if(savedSlides){
+        savedSlides.innerHTML='';
+        previews.forEach((url,i)=>{
+          const img=document.createElement('img');
+          img.src=url; img.alt='New background photo '+(i+1);
+          img.style.cssText='width:96px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--line)';
+          savedSlides.appendChild(img);
+        });
+        if(savedSlidesBox) savedSlidesBox.style.display='block';
+      }
       const hero=document.querySelector('.personal-hero');
       if(!hero) return;
       hero.querySelectorAll('.slide').forEach(el=>el.remove());
