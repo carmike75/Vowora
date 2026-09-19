@@ -30,6 +30,15 @@
 
   function setCloudUiSignedIn(user) {
     const signedIn = !!user;
+    const verified = !!user?.email_confirmed_at;
+    const resendBtn = $("cloudResendBtn");
+    if (resendBtn) {
+      resendBtn.style.display = (signedIn && verified) ? "none" : "";
+      resendBtn.disabled = false;
+      resendBtn.textContent = "Resend confirmation email";
+      resendBtn.style.pointerEvents = "auto";
+      resendBtn.style.opacity = "1";
+    }
     ["cloudSaveBtn","cloudLoadBtn","invitePartnerBtn","publishWeddingBtn","copyShareBtn"].forEach(id => {
       const el = $(id);
       if (!el) return;
@@ -83,12 +92,57 @@
     status("Account created. We sent a confirmation email to " + email + ". Open that email and click the confirmation link. Then return to Vowora and click Sign in. Check Spam/Junk if you do not see it.");
   }
 
+  let resendCooldownTimer = null;
   async function resendConfirmation() {
     const email = $("cloudEmail")?.value.trim();
     if (!email) return status("Enter the email address first.");
+
+    const user = await getUser();
+    if (user?.email_confirmed_at) {
+      setCloudUiSignedIn(user);
+      return status("Email verified. You are already signed in as " + (user.email || email) + ". No confirmation email is needed.");
+    }
+
+    const btn = $("cloudResendBtn");
+    if (btn?.disabled) return;
+    if (btn) {
+      btn.disabled = true;
+      btn.style.pointerEvents = "none";
+      btn.style.opacity = ".65";
+      btn.textContent = "Sending...";
+    }
+
     const { error } = await sb.auth.resend({ type: "signup", email, options: { emailRedirectTo: location.origin + location.pathname } });
-    if (error) return status("Confirmation email error: " + error.message);
-    status("Confirmation email sent to " + email + ". Check Inbox and Spam/Junk, then click the verification link.");
+    if (error) {
+      const msg = String(error.message || error);
+      if (btn) {
+        btn.disabled = false;
+        btn.style.pointerEvents = "auto";
+        btn.style.opacity = "1";
+        btn.textContent = "Resend confirmation email";
+      }
+      if (/rate limit|too many|security purposes/i.test(msg)) {
+        return status("A confirmation email was already requested recently. Please wait before requesting another one, and check Inbox or Spam/Junk.");
+      }
+      return status("Confirmation email error: " + msg);
+    }
+
+    status("Confirmation email requested for " + email + ". Check Inbox and Spam/Junk. Please wait before requesting another.");
+    let remaining = 60;
+    clearInterval(resendCooldownTimer);
+    resendCooldownTimer = setInterval(() => {
+      remaining -= 1;
+      if (!btn) return clearInterval(resendCooldownTimer);
+      if (remaining <= 0) {
+        clearInterval(resendCooldownTimer);
+        btn.disabled = false;
+        btn.style.pointerEvents = "auto";
+        btn.style.opacity = "1";
+        btn.textContent = "Resend confirmation email";
+      } else {
+        btn.textContent = "Resend available in " + remaining + "s";
+      }
+    }, 1000);
   }
 
   async function signIn() {
@@ -414,7 +468,11 @@
     setCloudUiSignedIn(user);
     if (user) {
       if ($("cloudEmail")) $("cloudEmail").value = user.email || "";
-      status("Signed in as " + (user.email || "user") + ". Cloud save and load are ready.");
+      if (user.email_confirmed_at) {
+        status("Email verified. Signed in securely as " + (user.email || "user") + ". Cloud save and load are ready.");
+      } else {
+        status("Signed in, but email verification is still pending. Check your Inbox or Spam/Junk.");
+      }
       await acceptInviteForUser(user);
     } else {
       status("Not signed in. Create an account once, or sign in with an existing account.");
