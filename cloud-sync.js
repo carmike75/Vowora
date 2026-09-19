@@ -183,27 +183,62 @@
       updated_at: new Date().toISOString()
     };
 
-    let wedding;
+    status("Saving wedding to the cloud...");
+
+    // Resolve the wedding row from the database instead of trusting a stale
+    // browser-stored wedding ID. This also prevents accidental duplicate weddings.
+    let wedding = null;
+
     if (currentWeddingId) {
       const { data, error } = await sb
         .from("weddings")
-        .update(payload)
+        .select("*")
         .eq("id", currentWeddingId)
-        .select()
-        .single();
+        .eq("owner_id", user.id)
+        .maybeSingle();
+      if (error) console.warn("Stored wedding lookup failed:", error);
+      wedding = data || null;
+      if (!wedding) {
+        currentWeddingId = null;
+        localStorage.removeItem("voworaCloudWeddingId");
+      }
+    }
+
+    if (!wedding) {
+      const { data, error } = await sb
+        .from("weddings")
+        .select("*")
+        .eq("owner_id", user.id)
+        .order("updated_at", { ascending: false })
+        .limit(1);
+      if (error) return status("Cloud lookup error: " + error.message);
+      wedding = data?.[0] || null;
+      if (wedding) {
+        currentWeddingId = wedding.id;
+        localStorage.setItem("voworaCloudWeddingId", currentWeddingId);
+      }
+    }
+
+    if (wedding) {
+      const { error } = await sb
+        .from("weddings")
+        .update(payload)
+        .eq("id", wedding.id)
+        .eq("owner_id", user.id);
       if (error) return status("Cloud save error: " + error.message);
-      wedding = data;
+      currentWeddingId = wedding.id;
     } else {
       const { data, error } = await sb
         .from("weddings")
         .insert(payload)
-        .select()
-        .single();
+        .select("id");
       if (error) return status("Cloud save error: " + error.message);
-      wedding = data;
-      currentWeddingId = wedding.id;
-      localStorage.setItem("voworaCloudWeddingId", currentWeddingId);
+      const created = data?.[0];
+      if (!created?.id) return status("Cloud save error: wedding was not created. Please check the wedding database permissions.");
+      currentWeddingId = created.id;
     }
+
+    localStorage.setItem("voworaCloudWeddingId", currentWeddingId);
 
     const taskRows = Object.entries(t).map(([task_key, completed], i) => ({
       wedding_id: currentWeddingId,
@@ -214,10 +249,10 @@
 
     if (taskRows.length) {
       const { error: taskErr } = await sb.from("wedding_tasks").upsert(taskRows, { onConflict: "wedding_id,task_key" });
-      if (taskErr) return status("Wedding saved, but task sync failed: " + taskErr.message);
+      if (taskErr) return status("Wedding details saved, but task sync failed: " + taskErr.message);
     }
 
-    status("Wedding saved to the cloud. Your partner can now load the same wedding after joining it.");
+    status("Wedding saved to the cloud successfully.");
   }
 
   async function loadWedding() {
