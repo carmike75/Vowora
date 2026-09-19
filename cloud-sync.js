@@ -59,7 +59,12 @@
     const email = $("cloudEmail")?.value.trim();
     const password = $("cloudPassword")?.value;
     if (!email || !password) return status("Enter an email and password first.");
-    const { data, error } = await sb.auth.signUp({ email, password });
+    status("Creating your secure Vowora account...");
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: location.origin + location.pathname }
+    });
     if (error) {
       const msg = String(error.message || error);
       if (/rate limit/i.test(msg)) {
@@ -67,9 +72,15 @@
       }
       return status("Sign-up error: " + msg);
     }
-    status(data.user?.identities?.length === 0
-      ? "This email may already have an account. Try Sign in."
-      : "Account created. If email confirmation is enabled, confirm your email, then sign in.");
+    if (data.user?.identities?.length === 0) {
+      return status("This email already appears to have a Vowora account. Use Sign in instead.");
+    }
+    if (data.session) {
+      setCloudUiSignedIn(data.user);
+      status("Account created and signed in. Your wedding can now be saved to the cloud.");
+      return;
+    }
+    status("Account created. We sent a confirmation email to " + email + ". Open that email and click the confirmation link. Then return to Vowora and click Sign in. Check Spam/Junk if you do not see it.");
   }
 
   async function signIn() {
@@ -80,12 +91,12 @@
     const { data, error } = await sb.auth.signInWithPassword({ email, password });
     if (error) {
       const msg = String(error.message || error);
-      if (/email not confirmed/i.test(msg)) return status("Please confirm this email from your inbox first, then click Sign in again.");
+      if (/email not confirmed/i.test(msg)) return status("Email not confirmed yet. Open the Vowora confirmation email sent to " + email + ", click the confirmation link, then return here and click Sign in again. Check Spam/Junk if needed.");
       if (/invalid login credentials/i.test(msg)) return status("Sign-in failed. Check the email/password. If this is a new email, create the account first.");
       return status("Sign-in error: " + msg);
     }
     setCloudUiSignedIn(data.user);
-    status("Signed in as " + data.user.email + ". Looking for your saved wedding...");
+    status("Email verified. Signed in securely as " + data.user.email + ". Looking for your saved wedding...");
     await acceptInviteForUser(data.user);
     await loadWedding();
   }
