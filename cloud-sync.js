@@ -268,19 +268,46 @@
     status("Share link copied.");
   }
 
-  function newWedding() {
-    const ok = confirm("Start a fresh wedding on this device? Your existing cloud wedding will remain saved and can be loaded again after sign-in.");
+  async function newWedding() {
+    const ok = confirm("Start a completely fresh wedding? This clears this couple from the screen and signs out the current Vowora account on this device. The existing cloud wedding remains saved.");
     if (!ok) return;
+
     currentWeddingId = null;
     localStorage.removeItem("voworaCloudWeddingId");
-    if (typeof window.startNewCouple === "function") {
-      window.startNewCouple();
-    } else {
-      localStorage.removeItem("voworaProfile");
-      localStorage.removeItem("voworaTasks");
-      location.reload();
-    }
-    status("Fresh wedding ready. Your previous cloud wedding remains safely saved.");
+
+    // Sign out first so init/auth cannot immediately repopulate the previous email.
+    try { await sb.auth.signOut(); } catch (e) { console.warn("Vowora sign-out during fresh wedding:", e); }
+
+    // startNewCouple has its own confirmation, so clear directly here to avoid a second prompt.
+    [
+      "voworaProfile","voworaTasks","voworaBudget","voworaBudgetItems","voworaGuests",
+      "voworaGuestList","voworaVendorShortlist","voworaDocuments","voworaCeremony",
+      "voworaAttire","voworaWeddingWeek","voworaQuoteContact"
+    ].forEach(k => localStorage.removeItem(k));
+    localStorage.setItem("voworaTasks", JSON.stringify({setup:false}));
+
+    ["p1","p2","wdate","wcity","guestCount","workingBudget","coupleEmail","couplePhone",
+     "cloudEmail","cloudPassword","partnerEmail","publicShareLink","quoteEmail","quotePhone"]
+      .forEach(id => { const el=$(id); if(el) el.value=""; });
+    ["profileUpload","slideUpload"].forEach(id => { const el=$(id); if(el) el.value=""; });
+
+    document.querySelectorAll(".profile-photo,.mini-avatar").forEach(el => {
+      el.classList.add("no-photo");
+      el.style.setProperty("background-image","none","important");
+    });
+    const hero=document.querySelector(".personal-hero");
+    if(hero) hero.querySelectorAll(".slide").forEach(el=>el.remove());
+
+    if ($("sideNames")) $("sideNames").textContent="Your Wedding";
+    if ($("heroNames")) $("heroNames").textContent="Your Names Here";
+    if ($("heroLocation")) $("heroLocation").textContent="Choose your wedding city · Your wedding, fully connected.";
+    if ($("sideDate")) $("sideDate").innerHTML="Wedding date not set<br>Choose your city";
+
+    if (typeof window.renderTodo === "function") window.renderTodo();
+    if (typeof window.countdown === "function") window.countdown();
+    setCloudUiSignedIn(null);
+    status("Fresh wedding ready. No couple is signed in. Enter the new couple details or create/sign in to their Vowora account.");
+    window.scrollTo({top:0,behavior:"smooth"});
   }
 
   async function acceptInviteForUser(user) {
