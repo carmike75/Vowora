@@ -83,6 +83,14 @@
     status("Account created. We sent a confirmation email to " + email + ". Open that email and click the confirmation link. Then return to Vowora and click Sign in. Check Spam/Junk if you do not see it.");
   }
 
+  async function resendConfirmation() {
+    const email = $("cloudEmail")?.value.trim();
+    if (!email) return status("Enter the email address first.");
+    const { error } = await sb.auth.resend({ type: "signup", email, options: { emailRedirectTo: location.origin + location.pathname } });
+    if (error) return status("Confirmation email error: " + error.message);
+    status("Confirmation email sent to " + email + ". Check Inbox and Spam/Junk, then click the verification link.");
+  }
+
   async function signIn() {
     const email = $("cloudEmail")?.value.trim();
     const password = $("cloudPassword")?.value;
@@ -330,7 +338,7 @@
   }
 
   window.VOWORA_CLOUD = {
-    signUp, signIn, saveWedding, loadWedding, invitePartner,
+    signUp, signIn, resendConfirmation, saveWedding, loadWedding, invitePartner,
     publishWedding, copyShare, newWedding
   };
 
