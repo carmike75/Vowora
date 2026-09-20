@@ -9,6 +9,47 @@
     "Bridal Car / Wedding Car","Accommodation","Hair / Beauty","Music / Extras"
   ];
 
+  // Phase-one nationwide directory. These are public discovery listings, not
+  // endorsements. Contact details remain hidden until a business is approved.
+  const PUBLIC_DIRECTORY = [
+    ['Manila','Hotel','The Manila Hotel'],['Manila','Hotel','Sheraton Manila Bay'],['Manila','Venue','Casa Ibarra'],
+    ['Makati','Hotel','Makati Shangri-La, Manila'],['Makati','Hotel','Fairmont Makati'],['Makati','Hotel','New World Makati Hotel'],['Makati','Venue','The Blue Leaf Filipinas'],
+    ['Taguig','Hotel','Shangri-La The Fort, Manila'],['Taguig','Hotel','Grand Hyatt Manila'],['Taguig','Hotel','F1 Hotel Manila'],['Taguig','Venue','The Blue Leaf Events Pavilion'],
+    ['Pasay','Hotel','Conrad Manila'],['Pasay','Hotel','Manila Marriott Hotel'],['Pasay','Hotel','Hilton Manila'],['Pasay','Venue','Okada Manila'],
+    ['Quezon City','Hotel','Seda Vertis North'],['Quezon City','Hotel','Novotel Manila Araneta City'],['Quezon City','Venue','Fernwood Gardens'],['Quezon City','Venue','Gazebo Royale'],
+    ['Muntinlupa','Hotel','Acacia Hotel Manila'],['Muntinlupa','Hotel','Crimson Hotel Filinvest City'],['Muntinlupa','Venue','The Bellevue Manila'],
+    ['Antipolo','Venue','Jardin de Miramar'],['Antipolo','Venue','The Mango Farm Events Place'],['Antipolo','Venue','Luljetta’s Place Garden Suites'],
+    ['Tagaytay','Venue','Antonio’s'],['Tagaytay','Hotel','Taal Vista Hotel'],['Tagaytay','Venue','Hillcreek Gardens Tagaytay'],['Tagaytay','Venue','The Lake Hotel Tagaytay'],
+    ['Silang','Venue','Narra Hill'],['Silang','Venue','Angelfields Nature Sanctuary'],['Silang','Venue','The Forest Barn'],
+    ['Batangas City','Hotel','Lima Park Hotel'],['Nasugbu','Venue','Pico Sands Hotel'],['Lian','Venue','Matabungkay Beach Hotel'],
+    ['Baguio','Hotel','The Manor at Camp John Hay'],['Baguio','Hotel','Baguio Country Club'],['Baguio','Hotel','The Forest Lodge at Camp John Hay'],['Baguio','Venue','Frangeli House'],
+    ['Clark','Hotel','Clark Marriott Hotel'],['Clark','Hotel','Swissôtel Clark Philippines'],['Clark','Hotel','Quest Plus Conference Center Clark'],
+    ['Subic','Hotel','The Lighthouse Marina Resort'],['Subic','Hotel','ACEA Subic Beach Resort'],['Olongapo','Hotel','Central Park Reef Resort'],
+    ['Cebu City','Hotel','Radisson Blu Cebu'],['Cebu City','Hotel','Seda Central Bloc Cebu'],['Cebu City','Hotel','Waterfront Cebu City Hotel & Casino'],['Cebu City','Venue','Oakridge Pavilion'],
+    ['Mandaue','Hotel','bai Hotel Cebu'],['Mandaue','Venue','City Sports Club Cebu'],
+    ['Lapu-Lapu','Hotel','Shangri-La Mactan, Cebu'],['Lapu-Lapu','Hotel','Crimson Resort and Spa Mactan'],['Lapu-Lapu','Hotel','Jpark Island Resort & Waterpark Cebu'],['Lapu-Lapu','Hotel','Dusit Thani Mactan Cebu Resort'],
+    ['Dumaguete','Hotel','Sierra Hotel'],['Dumaguete','Hotel','Hotel Essencia'],['Dumaguete','Venue','Bethel Guest House'],['Dumaguete','Venue','Southview Hotel'],
+    ['Bacolod','Hotel','Seda Capitol Central'],['Bacolod','Hotel','L’Fisher Hotel'],['Bacolod','Hotel','Park Inn by Radisson Bacolod'],['Bacolod','Venue','Acacia Hotel Bacolod'],
+    ['Iloilo City','Hotel','Courtyard by Marriott Iloilo'],['Iloilo City','Hotel','Richmonde Hotel Iloilo'],['Iloilo City','Hotel','Seda Atria'],['Iloilo City','Hotel','Park Inn by Radisson Iloilo'],
+    ['Boracay','Hotel','Shangri-La Boracay'],['Boracay','Hotel','Discovery Boracay'],['Boracay','Hotel','Mövenpick Resort & Spa Boracay'],['Boracay','Hotel','Crimson Resort and Spa Boracay'],
+    ['Puerto Princesa','Hotel','Princesa Garden Island Resort and Spa'],['Puerto Princesa','Hotel','Hue Hotels and Resorts Puerto Princesa'],['Puerto Princesa','Hotel','Best Western Plus The Ivywall Hotel'],
+    ['Panglao','Hotel','Henann Resort Alona Beach'],['Panglao','Hotel','South Palms Resort Panglao'],['Panglao','Hotel','The Bellevue Resort'],['Panglao','Hotel','Amorita Resort'],
+    ['Davao City','Hotel','DusitD2 Davao'],['Davao City','Hotel','Seda Abreeza'],['Davao City','Hotel','Park Inn by Radisson Davao'],['Davao City','Venue','Waterfront Insular Hotel Davao'],
+    ['Cagayan de Oro','Hotel','Seda Centrio'],['Cagayan de Oro','Hotel','Limketkai Luxe Hotel'],['Cagayan de Oro','Venue','Pearlmont Hotel'],
+    ['General Santos','Hotel','Greenleaf Hotel Gensan'],['General Santos','Hotel','Grand Summit Hotel General Santos'],['General Santos','Venue','Venue 88'],
+    ['Legazpi','Hotel','The Marison Hotel'],['Legazpi','Hotel','Hotel St. Ellis'],['Legazpi','Hotel','PROXY by The Oriental Albay'],
+    ['Naga City','Hotel','The Avenue Plaza Hotel'],['Naga City','Hotel','Villa Caceres Hotel'],['Naga City','Hotel','Summit Hotel Naga'],
+    ['Tacloban','Hotel','Summit Hotel Tacloban'],['Tacloban','Hotel','Ironwood Hotel'],['Tacloban','Venue','Hotel XYZ'],
+    ['Butuan','Hotel','Watergate Boutique Hotel'],['Butuan','Hotel','Almont Inland Resort'],['Butuan','Hotel','Butuan Grand Palace Hotel'],
+    ['Zamboanga City','Hotel','Marcian Garden Hotel'],['Zamboanga City','Hotel','Garden Orchid Hotel'],['Zamboanga City','Hotel','Ever O Business Hotel']
+  ].map(([city,cat,name],index) => ({
+    id: `public-ph-${index+1}`,
+    city, cat, name,
+    note: 'Public discovery listing. Confirm packages, availability and terms directly with the business.',
+    price: 'Rate on request', status: 'public_listing', address: '', phone: '', rating: '', review_count: 0,
+    publicUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name+' '+city+' Philippines')}`
+  }));
+
   let cloudSuppliers = [];
   let cloudLoaded = false;
 
@@ -50,6 +91,16 @@
       fcat.innerHTML = '<option>All categories</option>' + cats.map(c => `<option>${esc(c)}</option>`).join('');
       if ([...fcat.options].some(o => o.value === current)) fcat.value = current;
     }
+    const fcity = document.getElementById('fcity');
+    const vendorCity = document.getElementById('vendorCity');
+    const cities = [...new Set(cloudSuppliers.map(v => v.city).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+    [fcity,vendorCity].forEach(select => {
+      if (!select) return;
+      const current = select.value;
+      const first = select === fcity ? '<option value="All cities">All cities</option>' : '<option value="">Choose city</option>';
+      select.innerHTML = first + cities.map(city => `<option>${esc(city)}</option>`).join('');
+      if ([...select.options].some(o => o.value === current)) select.value = current;
+    });
   }
 
   window.render = function renderCloudSuppliers() {
@@ -87,8 +138,8 @@
         <span class="tag">${v.status === 'vowora_verified' ? 'Vowora Verified' : 'Public listing'}</span>
         ${v.address ? `<div class="meta" style="margin-top:8px">${esc(v.address)}</div>` : ''}
         <div class="actions">
-          <button class="quote" onclick="alert('Quote request workflow will send this supplier your wedding date, guest count and requirements after your approval.')">Request Quote</button>
-          <button class="callback" onclick="alert('${v.phone ? 'Contact: '+esc(v.phone) : 'Callback request will be enabled when this supplier confirms contact details with Vowora.'}')">Request Callback</button>
+          ${v.status === 'vowora_verified' ? `<button class="quote" onclick="alert('Quote request workflow will send this supplier your wedding date, guest count and requirements after your approval.')">Request Quote</button>` : `<a class="quote" style="text-decoration:none;text-align:center;padding:9px;border-radius:8px;font-size:11px;font-weight:800" href="${esc(v.publicUrl || '#')}" target="_blank" rel="noopener">View public profile</a>`}
+          <button class="callback" onclick="alert('${v.phone ? 'Contact: '+esc(v.phone) : 'Direct callback becomes available after this business claims and confirms its Vowora listing.'}')">${v.phone ? 'Contact supplier' : 'Claim pending'}</button>
         </div>
       </article>
     `).join('') || `
@@ -119,7 +170,7 @@
       if (!res.ok) throw new Error(`Supplier API error ${res.status}: ${await res.text()}`);
 
       const rows = await res.json();
-      cloudSuppliers = rows.map(r => ({
+      const approved = rows.map(r => ({
         id: r.id,
         city: r.city,
         cat: normalizeCategory(r.category),
@@ -133,16 +184,18 @@
         review_count: r.review_count || 0
       }));
 
+      const approvedKeys = new Set(approved.map(v => `${v.name}|${v.city}`.toLowerCase()));
+      cloudSuppliers = [...approved, ...PUBLIC_DIRECTORY.filter(v => !approvedKeys.has(`${v.name}|${v.city}`.toLowerCase()))];
+
       cloudLoaded = true;
       setupCloudFilters();
       window.render();
     } catch (err) {
       console.error(err);
       cloudLoaded = true;
-      const catalog = document.getElementById('catalog');
-      if (catalog) {
-        catalog.innerHTML = `<div class="card"><h3>Supplier directory connection needs attention.</h3><p>${esc(err.message)}</p></div>`;
-      }
+      cloudSuppliers = [...PUBLIC_DIRECTORY];
+      setupCloudFilters();
+      window.render();
     }
   }
 
